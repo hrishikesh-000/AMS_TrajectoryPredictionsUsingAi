@@ -1,0 +1,21 @@
+# Requirements for the standalone scripts in this repo:
+#   build_final_dataset.py, build_5_metadata.py, gns_enkf_rollout.py,
+#   drift_comparison_report.py, make_comparison_gif.py
+#
+# This does NOT include geoelements/gns itself (learned_simulator,
+# reading_utils, gns.train) — that is a separate checkout at
+# $GNS_REPO_ROOT with its own dependencies (install per its own
+# requirements.txt / setup.py, typically also pulling in
+# torch-geometric / torch-scatter / torch-cluster, absl-py, dm-tree,
+# scikit-learn, and a matching-CUDA build of torch).
+
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+pillow>=10.0          # required by matplotlib.animation.PillowWriter (GIF export)
+
+# Install a torch build matching your CUDA toolkit (the ANTS H100 nodes
+# use a Spack-provided CUDA env sourced before the venv is activated —
+# see README §6). CPU-only fallback works for gns_enkf_rollout.py but
+# will be slow for anything beyond a handful of rollout steps.
+torch>=2.1

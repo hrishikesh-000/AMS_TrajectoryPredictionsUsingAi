@@ -1,0 +1,19 @@
+# Requirements for the standalone scripts in this folder.
+#
+# This does NOT include geoelements/gns itself (gns.train, gns.data_loader,
+# learned_simulator) -- that is a separate checkout, installed per its own
+# requirements.txt/setup.py (typically also pulling in torch-geometric,
+# torch-scatter, torch-cluster, absl-py, dm-tree, scikit-learn, and a
+# matching-CUDA build of torch). See ../MoreFlow/requirements.txt's note
+# on the same split -- both pipelines share this same assumption.
+
+numpy>=1.24
+scipy>=1.10          # required by shape_and_spacing.py (cKDTree)
+matplotlib>=3.7
+pillow>=10.0          # required by matplotlib.animation.PillowWriter (GIF export)
+
+# Install a torch build matching your CUDA toolkit. CPU-only fallback works
+# for enkf_rollout.py but will be slow for anything beyond a handful of
+# rollout steps or ensemble members.
+torch>=2.1
+torch-geometric>=2.4

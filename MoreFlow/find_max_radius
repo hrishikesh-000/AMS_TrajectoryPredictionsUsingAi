@@ -1,0 +1,63 @@
+import pandas as pd
+import glob, os, re, json
+
+csv_folder = r"C:\Users\Jayakrishna A J\GNS_Project\all_data_02_more_Flow"
+files = glob.glob(os.path.join(csv_folder, "*.csv"))
+files = sorted(files, key=lambda f: int(re.findall(r"_(\d+)\.csv", f)[-1]))
+
+results = []
+global_max_radius = 0
+
+for f in files:
+    df = pd.read_csv(f)
+    frame_num = int(re.findall(r"_(\d+)\.csv", f)[-1])
+    max_r = df['radius'].max()
+    
+    # Boundary condition per file (bounding box of positions)
+    x_min, x_max = df['Points:0'].min(), df['Points:0'].max()
+    y_min, y_max = df['Points:1'].min(), df['Points:1'].max()
+    z_min, z_max = df['Points:2'].min(), df['Points:2'].max()
+    
+    results.append({
+        "frame": frame_num,
+        "n_particles": len(df),
+        "max_radius": max_r,
+        "x_bounds": [x_min, x_max],
+        "y_bounds": [y_min, y_max],
+        "z_bounds": [z_min, z_max]
+    })
+    
+    if max_r > global_max_radius:
+        global_max_radius = max_r
+
+print(f"Global max radius across ALL 400 files: {global_max_radius}")
+print(f"\nRadius multiples to test:")
+for m in [1, 2, 3, 4, 5]:
+    print(f"  {m}x → {global_max_radius * m:.6f}")
+
+# Save per-frame info
+df_results = pd.DataFrame(results)
+df_results.to_csv(r"C:\Users\Jayakrishna A J\GNS_Project\per_frame_radius_bounds.csv", index=False)
+print("\n✅ Saved per_frame_radius_bounds.csv")
+
+# Save global boundary (overall min/max across all frames)
+overall_x = [df_results['x_bounds'].apply(lambda b: b[0]).min(), 
+             df_results['x_bounds'].apply(lambda b: b[1]).max()]
+overall_y = [df_results['y_bounds'].apply(lambda b: b[0]).min(), 
+             df_results['y_bounds'].apply(lambda b: b[1]).max()]
+overall_z = [df_results['z_bounds'].apply(lambda b: b[0]).min(), 
+             df_results['z_bounds'].apply(lambda b: b[1]).max()]
+
+print(f"\nOverall boundary (all 400 frames):")
+print(f"  X: {overall_x}")
+print(f"  Y: {overall_y}")
+print(f"  Z: {overall_z}")
+
+config = {
+    "global_max_radius": float(global_max_radius),
+    "radius_multiples": {f"{m}x": float(global_max_radius*m) for m in [1,2,3,4,5]},
+    "overall_bounds": [overall_x, overall_y, overall_z]
+}
+with open(r"C:\Users\Jayakrishna A J\GNS_Project\radius_config.json", "w") as f:
+    json.dump(config, f, indent=2)
+print("\n✅ Saved radius_config.json")
